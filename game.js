@@ -100,27 +100,24 @@ class Game {
     // drain its beamTime by delta, but not below zero. Of the junk in the
     // beam, return the one with the most beamTime, but only if that is more
     // than Game.JUNK_CATCH_TIME_MS. Otherwise return null.
-const junkCollected = []
+    let best = null
     for( const junk of this.level.junk){
       if (this.magpie.beamContains(junk.physics)){
         junk.beamTime += delta
-        junkCollected.push(junk)
+        if(best === null || junk.beamTime > best.beamTime){
+          best = junk
+        }
       }
       else {
         junk.beamTime = Math.max(0, junk.beamTime - delta)
       }
     }
- if (junkCollected > 0){
-   let mostbeamTime = junkCaught[0]
-   for(const junk of junkCaught){
-     if (junk.beamTime > best.beamTime){
-       return mostbeamTime
-     }
-   }
- }
-    
-    return null;
+    if (best !== null && best.beamTime > Game.JUNK_CATCH_TIME_MS){
+      return best
+    }
+    return null
   }
+ 
 
   /**
    * Checks whether the junk the Magpie is carrying is inside the Mothership's
@@ -134,8 +131,26 @@ const junkCollected = []
     // Mothership, add delta to its dropoffTime. Otherwise, drain its
     // dropoffTime by delta, but not below zero. Return true when dropoffTime
     // is more than Game.JUNK_DROPOFF_TIME_MS.
-    return false;
+    const junk = this.magpie.capturedJunk
+    if (!junk) {
+      return false;
+    }
+    
+    
+    const pickupRadius = Mothership.PICKUP_DIAMETER / 2;
+    if( dist(this.magpie.physics.x, this.magpie.physics.y, this.mothership.physics.x, this.mothership.physics.y) <= pickupRadius){
+    junk.dropoffTime += delta
+    }
+    else{
+      junk.dropoffTime = Math.max(
+        0,
+        junk.dropoffTime - delta
+      );
+    }
+
+    return junk.dropoffTime > Game.JUNK_DROPOFF_TIME_MS;
   }
+
 
   draw() {
     this.level.draw(this.score, this.lives);
@@ -165,6 +180,9 @@ const junkCollected = []
   updateScore(reason) {
     // TODO (Phase 4): When the reason is "dropoff", add Game.SCORE_DROPOFF
     // to the score.
+    if (reason === "dropoff") {
+      this.score += Game.SCORE_DROPOFF;
+    }
   }
 
   isLevelComplete() {

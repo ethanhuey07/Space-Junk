@@ -31,7 +31,15 @@ class Magpie {
         // the ship is drawn on top of it. Rotate by the Magpie's rotation,
         // translate to (0, Magpie.CARGO_Y), and call Junk.drawJunk(). Use
         // push() and pop() so the ship below isn't moved too.
-        Magpie.drawMagpie({ rotation: this.physics.rotation, beam: this.beam });
+
+        if (this.capturedJunk) {
+          push();
+          rotate(this.physics.rotation);
+          translate(0, Magpie.CARGO_Y);
+          Junk.drawJunk();
+          pop();
+        }
+        Magpie.drawMagpie({ rotation: this.physics.rotation,beam: this.beam });
         if (game.debug) {
           this.physics.draw();
         }
@@ -44,6 +52,9 @@ class Magpie {
   captureJunk(junk) {
     // TODO (Phase 4): Remember the junk in this.capturedJunk, and switch the
     // beam off.
+    this.capturedJunk = junk
+    this.beam = false
+
   }
 
   // this method is static. That means it doesn't use `this` to gain access to
@@ -59,8 +70,8 @@ class Magpie {
     rectMode(CENTER)
     //beam
     if (beam) {
-      fill("#fff25e")
-      triangle(0,0, Magpie.BEAM_WIDTH, Magpie.BEAM_HEIGHT, -Magpie.BEAM_WIDTH, Magpie.BEAM_HEIGHT)
+      fill(255, 242, 94, 120)
+      triangle(0,0, Magpie.BEAM_WIDTH , Magpie.BEAM_HEIGHT, -Magpie.BEAM_WIDTH, Magpie.BEAM_HEIGHT)
     }
     //dome
     fill("#515e8f")
